@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -27,21 +28,34 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/clients", clientRoutes);
 
 const frontendDist = path.join(__dirname, "..", "..", "frontend", "dist");
-app.use(
-  express.static(frontendDist, {
-    setHeaders: (res) => {
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-    },
-  })
-);
+const frontendIndex = path.join(frontendDist, "index.html");
+const hasFrontendBuild = fs.existsSync(frontendIndex);
 
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.sendFile(path.join(frontendDist, "index.html"));
-});
+if (hasFrontendBuild) {
+  app.use(
+    express.static(frontendDist, {
+      setHeaders: (res) => {
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
+      },
+    })
+  );
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.sendFile(frontendIndex);
+  });
+} else {
+  app.get("/", (_req, res) => {
+    res.json({
+      ok: true,
+      service: "motomanager-backend",
+      message: "Backend activo. Despliega el frontend como Static Site en Render.",
+    });
+  });
+}
 
 app.listen(port, () => {
   console.log(`MotoManager backend running on ${port}`);
