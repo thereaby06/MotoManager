@@ -1,0 +1,15 @@
+{
+  "name": "motomanager-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MotoManager Suite monorepo",
+  "scripts": {
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
