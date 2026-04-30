@@ -37,7 +37,7 @@ app.use(
   })
 );
 
-app.get("*", (req, res, next) => {
+app.use((req, res, next) => {
   if (req.path.startsWith("/api")) return next();
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.sendFile(path.join(frontendDist, "index.html"));
